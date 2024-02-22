@@ -1,0 +1,6 @@
+.env
+_frozen_time
+log
+venv
+__pycache__/
+.idea/
