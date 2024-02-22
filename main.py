@@ -19,16 +19,35 @@ def init_logger():
 
 init_logger()
 
+AUTH_TOKEN = ''
+
 
 def get_special_projects():
     headers = {
-        "Authorization": config.AUTH_TOKEN
+        "Authorization": f"Bearer {AUTH_TOKEN}"
     }
     resp = requests.get("https://my.itmo.ru/api/sport/my_sport/spec_projects", headers=headers)
     try:
         return resp.json()["result"]
     except Exception as e:
         logging.error(f"Internal error:={e}")
+
+
+def refresh_access_token_without_secret(refresh_token, client_id, token_url, realm):
+    data = {
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token,
+        'client_id': client_id,
+    }
+
+    response = requests.post(f'{token_url}/realms/{realm}/protocol/openid-connect/token', data=data)
+
+    if response.status_code == 200:
+        new_access_token = response.json().get('access_token')
+        return new_access_token
+    else:
+        print(f"Ошибка при обновлении access token: {response.status_code}, {response.text}")
+        return None
 
 
 def main():
@@ -57,10 +76,10 @@ if __name__ == "__main__":
         try:
             main()
         except Exception:
-            TgManager.send_message_to_all_users(f"No free places found. Restart the script with new Bearer token!")
-            logging.error("Error")
-            # TODO if error -> Need re-login and get new Authorization Bearer token
-            exit(1)
+            logging.info("Trying to get refreshed access token")
+            AUTH_TOKEN = refresh_access_token_without_secret(refresh_token=config.KEYCLOACK_REFRESH_TOKEN,
+                                                             client_id=config.KEYCLOACK_CLIENT_ID,
+                                                             token_url='https://id.itmo.ru/auth',
+                                                             realm='itmo')
         else:
-            time.sleep(60)
-
+            time.sleep(10)
