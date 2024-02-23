@@ -15,7 +15,10 @@ class TgManager:
                                   "мест для записи на Strava!")
 
     @staticmethod
-    def send_message_to_all_users(message):
+    def send_message_to_all_users(message) -> None:
         for chat_id, subscribed in USER_CHAT_IDS.items():
             if subscribed:
-                bot.send_message(chat_id, message)
+                try:
+                    bot.send_message(chat_id, message)
+                except Exception as err:
+                    raise ConnectionError(f"Tg bot request error={err}")
