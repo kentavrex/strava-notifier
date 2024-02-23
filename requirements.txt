@@ -2,4 +2,4 @@ requests~=2.31.0
 pydantic-settings==2.0.3
 python-dotenv~=1.0.1
 pydantic~=2.6.1
-python-telegram-bot==20.8
+pyTelegramBotAPI==4.16.1
